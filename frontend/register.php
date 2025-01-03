@@ -3,9 +3,10 @@
 $host = 'localhost';
 $username = 'root';
 $password = '';
-$dbname = 'test';  // Use your actual database name
+$dbname = 'library_management';  // Use your actual database name
 $conn = new mysqli($host, $username, $password, $dbname);
 
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -23,22 +24,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Hash the password before storing it in the database
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insert the data into the registrations table
-    $sql = "INSERT INTO registrations (name, email, department_id, faculty_id, role, password) VALUES (?, ?, ?, ?, ?, ?)";
+    // Insert the data into the user table (not registrations)
+    $sql = "INSERT INTO users (name, email, department_id, faculty_id, role, password) VALUES (?, ?, ?, ?, ?, ?)";
+    
+    // Prepare the query
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssiiss", $name, $email, $department_id, $faculty_id, $role, $hashed_password); // Updated to bind 'password' parameter
 
+    // Check for errors in preparing the query
+    if ($stmt === false) {
+        die('MySQL prepare error: ' . $conn->error);
+    }
+
+    // Bind parameters
+    $stmt->bind_param("ssiiss", $name, $email, $department_id, $faculty_id, $role, $hashed_password);
+
+    // Execute the query
     if ($stmt->execute()) {
-        $success = "Registration successful!";
+        $success = "Registration successful! You can now log in.";
+        $login_link = '<a href="login.php" class="btn btn-primary w-100 mt-3">Login Now</a>';
     } else {
         $error = "Error: " . $stmt->error;
     }
 
+    // Close the statement
     $stmt->close();
 }
 
+// Close the connection
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -172,6 +187,10 @@ $conn->close();
 
                             <button type="submit" class="btn btn-primary w-100" id="register-btn" disabled>Register</button>
                         </form>
+
+                        <!-- Success message with Login Now button -->
+                        <?php
+                         if (isset($success)) echo $login_link  ?>
                     </div>
                 </div>
             </div>

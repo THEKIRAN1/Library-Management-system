@@ -47,9 +47,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Register</title>
     <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body.bg-light {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .card.shadow-lg {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .form-label {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .form-control,
+        .form-select {
+            font-size: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .alert {
+            margin-top: 15px;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        #faculty-container {
+            display: none;
+        }
+
+        #faculty {
+            width: 100%;
+        }
+
+        #register-btn {
+            cursor: not-allowed;
+        }
+
+        #register-btn:enabled {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container">
@@ -75,8 +140,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </div>
-
-    <!-- Include Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
