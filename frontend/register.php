@@ -74,23 +74,27 @@ $departments_result = $conn->query($departments_query);
                             </select>
                         </div>
 
+                        <!-- Department Dropdown -->
                         <div class="mb-3">
                             <label for="department" class="form-label">Department</label>
                             <select name="department" id="department" class="form-select" required>
+                                <option value="">Select a Department</option>
                                 <?php while ($row = $departments_result->fetch_assoc()) { ?>
                                     <option value="<?= $row['id']; ?>"><?= $row['name']; ?></option>
                                 <?php } ?>
                             </select>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- Faculty Dropdown (Initially hidden and disabled) -->
+                        <div class="mb-3" id="faculty-container" style="display: none;">
                             <label for="faculty" class="form-label">Faculty</label>
-                            <select name="faculty" id="faculty" class="form-select" required>
-                                <!-- Faculties will be populated dynamically based on selected department -->
+                            <select name="faculty" id="faculty" class="form-select" disabled required>
+                                <option value="">Select a Faculty</option>
+                                <!-- Faculties will be populated dynamically here -->
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                        <button type="submit" class="btn btn-primary w-100" id="register-btn" disabled>Register</button>
                     </form>
                 </div>
             </div>
@@ -104,25 +108,71 @@ $departments_result = $conn->query($departments_query);
 <script>
     // Dynamically load faculties based on department selection
     document.getElementById('department').addEventListener('change', function() {
-        var departmentId = this.value;
-        
+    var departmentId = this.value;
+    var facultySelect = document.getElementById('faculty');
+    var facultyContainer = document.getElementById('faculty-container');
+    var registerBtn = document.getElementById('register-btn');
+
+    // If a department is selected
+    if (departmentId) {
+        // Enable the faculty select and show the faculty container
+        facultyContainer.style.display = 'block';
+        facultySelect.disabled = false;
+
+        // Send AJAX request to get faculties based on selected department
         var xhr = new XMLHttpRequest();
         xhr.open("GET", "get_faculties.php?department_id=" + departmentId, true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
-                var faculties = JSON.parse(xhr.responseText);
-                var facultySelect = document.getElementById('faculty');
-                facultySelect.innerHTML = ''; // Clear existing options
+                // Parse the JSON response
+                try {
+                    var faculties = JSON.parse(xhr.responseText);
 
-                faculties.forEach(function(faculty) {
-                    var option = document.createElement('option');
-                    option.value = faculty.id;
-                    option.text = faculty.name;
-                    facultySelect.appendChild(option);
-                });
+                    // Clear previous options
+                    facultySelect.innerHTML = '<option value="">Select a Faculty</option>';
+
+                    // Populate faculty dropdown with new options
+                    if (faculties.length > 0) {
+                        faculties.forEach(function(faculty) {
+                            var option = document.createElement('option');
+                            option.value = faculty.id;
+                            option.text = faculty.name;
+                            facultySelect.appendChild(option);
+                        });
+                    } else {
+                        var option = document.createElement('option');
+                        option.value = '';
+                        option.text = 'No faculties available';
+                        facultySelect.appendChild(option);
+                    }
+
+                    // Enable the Register button only if a faculty is selected
+                    registerBtn.disabled = false;
+                } catch (e) {
+                    console.error("Error parsing JSON response:", e);
+                    alert('Error loading faculties');
+                }
             }
         };
         xhr.send();
+    } else {
+        // If no department is selected, hide the faculty container and disable the faculty select
+        facultyContainer.style.display = 'none';
+        facultySelect.disabled = true;
+        facultySelect.innerHTML = '<option value="">Select a Faculty</option>'; // Reset options
+        registerBtn.disabled = true; // Disable register button
+    }
+});
+
+
+    // Disable the register button if no faculty is selected
+    document.getElementById('faculty').addEventListener('change', function() {
+        var registerBtn = document.getElementById('register-btn');
+        if (this.value) {
+            registerBtn.disabled = false;
+        } else {
+            registerBtn.disabled = true;
+        }
     });
 </script>
 
