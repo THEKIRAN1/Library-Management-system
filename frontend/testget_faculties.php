@@ -3,7 +3,7 @@
 $host = 'localhost';
 $username = 'root';
 $password = '';
-$dbname = 'test';
+$dbname = 'library_management';
 $conn = new mysqli($host, $username, $password, $dbname);
 
 if ($conn->connect_error) {
@@ -21,6 +21,7 @@ if (isset($_GET['department_id'])) {
     $stmt->execute();
     $result = $stmt->get_result();
 
+    
     $faculties = [];
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
