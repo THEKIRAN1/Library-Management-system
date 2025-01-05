@@ -3,7 +3,7 @@ require_once '../config/db.php';
 session_start();
 
 // Initialize variables for success/error messages
-$title = $publication = $department_id = $faculty_id = $author = '';
+$title = $publication = $department_id = $faculty_id = $author = $number_of_books = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Capture and sanitize POST data
@@ -12,16 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $department_id = $_POST['department'] ?? '';
     $faculty_id = $_POST['faculty'] ?? '';
     $author = $_POST['author'] ?? '';
+    $number_of_books = $_POST['number_of_books'] ?? '';
 
     // Validate required fields
-    if (empty($title) || empty($publication) || empty($department_id) || empty($faculty_id) || empty($author)) {
+    if (empty($title) || empty($publication) || empty($department_id) || empty($faculty_id) || empty($author) || empty($number_of_books)) {
         $_SESSION['error'] = 'All fields are required.';
         header("Location: add_book.php");
         exit;
     }
 
     // Insert into the database
-    $query = "INSERT INTO books (title, publication, author, department_id, faculty_id) VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO books (title, publication, author, department_id, faculty_id, number_of_books) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
 
     if ($stmt === false) {
@@ -30,10 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    $stmt->bind_param("sssii", $title, $publication, $author, $department_id, $faculty_id);
+    $stmt->bind_param("sssiii", $title, $publication, $author, $department_id, $faculty_id, $number_of_books);
 
     if ($stmt->execute()) {
-        $_SESSION['success'] = "Book added successfully!";
+        $_SESSION['success'] = "Book(s) added successfully!";
     } else {
         $_SESSION['error'] = "Error: " . $stmt->error;
     }
@@ -110,6 +111,10 @@ $departments_result = $conn->query($departments_query);
                             <select name="faculty" id="faculty" class="form-select" required>
                                 <option value="" disabled selected>Select Faculty</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="number_of_books" class="form-label">Number of Books</label>
+                            <input type="number" class="form-control" name="number_of_books" value="<?= htmlspecialchars($number_of_books); ?>" required min="1">
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Add Book</button>
                     </form>
