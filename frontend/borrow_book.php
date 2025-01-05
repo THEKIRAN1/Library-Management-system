@@ -2,40 +2,39 @@
 require_once '../config/db.php';
 session_start();
 
-// Check if the user is logged in
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    die("You must be logged in to borrow a book.");
+}
 
+// Get the book ID from the request
+if (isset($_POST['book_id'])) {
+    $book_id = $_POST['book_id'];
 
-// Check if the book ID is passed
-if (isset($_GET['book_id'])) {
-    $book_id = $_GET['book_id'];
+    // Check if there are books available for borrowing
+    $check_query = "SELECT number_of_books FROM books WHERE id = ? AND number_of_books > 0";
+    $stmt_check = $conn->prepare($check_query);
+    $stmt_check->bind_param("i", $book_id);
+    $stmt_check->execute();
+    $stmt_check->store_result();
 
-    // Query to check if the book exists
-    $query = "SELECT * FROM books WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $book_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if ($stmt_check->num_rows > 0) {
+        // Reduce the number of books by 1
+        $update_query = "UPDATE books SET number_of_books = number_of_books - 1 WHERE id = ?";
+        $stmt_update = $conn->prepare($update_query);
+        $stmt_update->bind_param("i", $book_id);
+        $stmt_update->execute();
 
-    if ($result->num_rows > 0) {
-        // Book exists, proceed with borrowing (You can insert borrowing logic here)
-
-        // Example: Insert a record into a borrowings table
-        $user_id = $_SESSION['user_id'];
-        $query_borrow = "INSERT INTO borrowings (user_id, book_id, borrowed_at) VALUES (?, ?, NOW())";
-        $stmt_borrow = $conn->prepare($query_borrow);
-        $stmt_borrow->bind_param("ii", $user_id, $book_id);
-        $stmt_borrow->execute();
-
-        // Redirect to view books page with success message
-        header("Location: view_books.php?borrowed=true");
-        exit;
+        // Check if the update was successful
+        if ($stmt_update->affected_rows > 0) {
+            echo "Book borrowed successfully.";
+        } else {
+            echo "Error borrowing book.";
+        }
     } else {
-        // Book does not exist
-        header("Location: view_books.php?error=Book not found");
-        exit;
+        echo "No books available.";
     }
 } else {
-    // Book ID is not provided
-    header("Location: view_books.php?error=Invalid book ID");
-    exit;
+    echo "No book ID provided.";
 }
+?>
