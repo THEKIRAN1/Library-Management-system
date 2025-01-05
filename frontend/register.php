@@ -139,7 +139,7 @@ $conn->close();
                         <h2 class="card-title text-center mb-4">Register</h2>
 
                         <!-- Success/Error messages inside the form -->
-                        <?php if (isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
+                        <?php if (isset($success)) echo "<div id='success-message' class='alert alert-success'>$success</div>"; ?>
                         <?php if (isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 
                         <!-- Registration Form -->
@@ -237,6 +237,13 @@ $conn->close();
                     $('#register-btn').prop('disabled', true); // Disable register button if no department or faculty selected
                 }
             });
+
+            // Automatically hide success message after 2 seconds
+            <?php if (isset($success)) { ?>
+                setTimeout(function() {
+                    $('#success-message').fadeOut();
+                }, 2000);
+            <?php } ?>
         });
     </script>
 </body>

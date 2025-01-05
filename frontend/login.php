@@ -18,26 +18,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = $result->fetch_assoc();
 
         // Verify the password
-        if (password_verify($password, $user['password'])) {
-            // Password is correct, create session variables
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_role'] = $user['role'];
+       // Password verification and session setup
+// Password verification and session setup
+if (password_verify($password, $user['password'])) {
+    // Set session variables
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_name'] = $user['name'];
+    $_SESSION['user_role'] = $user['role'];
 
-            // Redirect based on role
-            if ($user['role'] == 'admin') {
-                header("Location: admin_dashboard.php");
-            } else {
-                header("Location: user_dashboard.php");
-            }
+    // Debugging: log the role
+    error_log("User Role: " . $user['role']); // Check if role is being retrieved
+
+    // Redirect based on role
+    switch ($user['role']) {
+        case 'admin':
+            header("Location: http://localhost/library_management/frontend/admin_dashboard.php");  // Absolute path for admin
             exit;
-        } else {
-            // Invalid password
-            $error = "Invalid email or password!";
-        }
+        case 'teacher':
+        case 'student':
+            header("Location: http://localhost/library_management/frontend/user_dashboard.php");  // Absolute path for user
+            exit;
+        default:
+            header("Location: http://localhost/library_management/frontend/admin_dashboard.php");  // Default redirect if role is unexpected
+            exit;
+    }
+
+
+
+} else {
+    // Invalid password
+    $error = "Invalid password!";
+}
+
     } else {
         // Invalid email
-        $error = "Invalid email or password!";
+        $error = "Invalid email!";
     }
 }
 ?>
@@ -47,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Login</title>
     <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

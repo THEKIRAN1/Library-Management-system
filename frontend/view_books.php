@@ -1,16 +1,34 @@
 <?php
 require_once '../config/db.php';
-session_start();
+session_start(); // Start the session to check if the user is logged in
 
-// Check if the user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+
+
+// Get the logged-in user's department and faculty
+$user_id = $_SESSION['user_id'];
+$query_user = "SELECT department_id, faculty_id FROM users WHERE id = ?";
+$stmt = $conn->prepare($query_user);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_result = $stmt->get_result();
+
+if ($user_result->num_rows > 0) {
+    $user = $user_result->fetch_assoc();
+    $department_id = $user['department_id'];
+    $faculty_id = $user['faculty_id'];
+
+    // Query to get books for the logged-in user's department and faculty
+    $query = "SELECT * FROM books WHERE department_id = ? AND faculty_id = ?";
+    $stmt_books = $conn->prepare($query);
+    $stmt_books->bind_param("ii", $department_id, $faculty_id);
+    $stmt_books->execute();
+    $result = $stmt_books->get_result();
+} else {
+    // If no user data found, redirect or show an error
+    header('Location: login.php');
     exit;
 }
 
-// Fetch all books from the database
-$query = "SELECT * FROM books";
-$result = $conn->query($query);
 ?>
 
 <!DOCTYPE html>
@@ -22,49 +40,39 @@ $result = $conn->query($query);
     <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
     <div class="container mt-5">
-        <h2>Library Books</h2>
-        <a href="logout.php" class="btn btn-danger">Logout</a>
-        <hr>
-        
+        <h2>Books Available</h2>
+        <p>Here are the books you can borrow:</p>
+
+        <!-- Table to display books -->
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>#</th>
                     <th>Title</th>
                     <th>Author</th>
-                    <th>Category</th>
-                    <th>ISBN</th>
-                    <th>Quantity</th>
-                    <th>Available</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result->num_rows > 0): ?>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= $row['id'] ?></td>
-                            <td><?= $row['title'] ?></td>
-                            <td><?= $row['author'] ?></td>
-                            <td><?= $row['category'] ?></td>
-                            <td><?= $row['isbn'] ?></td>
-                            <td><?= $row['quantity'] ?></td>
-                            <td><?= $row['available_quantity'] ?></td>
-                            <td>
-                                <?php if ($_SESSION['user_role'] == 'admin'): ?>
-                                    <a href="edit_book.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                    <a href="delete_book.php?id=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="8" class="text-center">No books available</td></tr>
-                <?php endif; ?>
+                <?php
+                // Check if there are any books
+                if ($result->num_rows > 0) {
+                    // Output data of each row
+                    while ($book = $result->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($book['title']) . "</td>";
+                        echo "<td>" . htmlspecialchars($book['author']) . "</td>";
+                        echo "<td><a href='borrow_book.php?book_id=" . $book['id'] . "' class='btn btn-primary'>Borrow</a></td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4' class='text-center'>No books available</td></tr>";
+                }
+                ?>
             </tbody>
         </table>
+        <a href="user_dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 
     <!-- Include Bootstrap JS -->
