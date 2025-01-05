@@ -164,6 +164,7 @@ $departments_result = $conn->query($departments_query);
         }
     }, 5000);
 </script>
-
 </body>
 </html>
+
+//THIS IS THE CODE
